@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/qml">
+        <file>ControlPanel.qml</file>
+        <file>main.qml</file>
+        <file>MultiButton.qml</file>
+        <file>MultiButton2.qml</file>
+        <file>NumericKeyboard.qml</file>
+        <file>NumericKeyboardButton.qml</file>
+        <file>NumericKeyboardLogic.js</file>
+        <file>ScopeView.qml</file>
+        <file>UnitSelector.qml</file>
+        <file>UnitSelectorButton.qml</file>
+        <file>UnitSelectorLogic.js</file>
+        <file>ButtonWithLabelAndValue.qml</file>
+    </qresource>
+</RCC>
