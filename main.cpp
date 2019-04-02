@@ -72,17 +72,20 @@ int main(int argc, char *argv[])
 	QApplication::setOrganizationName("QtProject");
 	QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 	QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
-
 	QApplication app(argc, argv);
-
 	QIcon::setThemeName("automotive");
-
-
 	QQmlApplicationEngine engine;
+	DataSource dataSource(&engine);
+    engine.rootContext()->setContextProperty("dataSource", &dataSource);
 
 	engine.load(QUrl("qrc:/qml/main.qml"));
 	if (engine.rootObjects().isEmpty())
 		return -1;
+
+	QObject *scope = engine.rootObjects().at(0)->findChild<QObject*>("scope");
+	dataSource.setScope(scope);
+	dataSource.setButtons(engine.rootObjects().at(0)->findChild<QObject*>("buttons"));
+	//rect->setProperty("visible", false);
 
 	return app.exec();
 }

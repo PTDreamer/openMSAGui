@@ -1,11 +1,13 @@
 QT += charts quick quickcontrols2
 
 HEADERS += \
-    datasource.h
+    datasource.h \
+    ../openmsa/shared/comprotocol.h
 
 SOURCES += \
     main.cpp \
-    datasource.cpp
+    datasource.cpp \
+    ../openmsa/shared/comprotocol.cpp
 
 RESOURCES += \
     icons/icons.qrc \

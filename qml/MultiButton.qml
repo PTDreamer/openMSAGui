@@ -27,16 +27,18 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.0
-import QtQuick.Controls 1.0
-import QtQuick.Controls.Styles 1.0
+import QtQuick 2.1
+import QtQuick.Layouts 1.0
 import QtQuick.Controls.Imagine 2.12
+import QtQuick.Controls 2.5
+import QtQuick.Controls.Styles 1.4
+
 
 Item {
     id: button
 
     property string text: "Option: "
-    property variant items: ["first"]
+    property variant items: ["first","second"]
     property int currentSelection: 0
     signal selectionChanged(variant selection)
 
@@ -47,24 +49,100 @@ Item {
 
     Button {
         id: buttonText
-        width: parent.width
-        height: parent.height
+        leftPadding: 4
+        rightPadding: 4
+        topPadding: 12
+        bottomPadding: 12
+        implicitWidth: 90
+        implicitHeight: 60
 
-        style: ButtonStyle {
-            label: Component {
-                Text {
-                    text: button.text + button.items[currentSelection]
-                    clip: true
-                    wrapMode: Text.WordWrap
-                    verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: Text.AlignHCenter
-                    anchors.fill: parent
-                }
-            }
+        icon.name: "placeholder"
+        icon.width: 44
+        icon.height: 44
+        display: Button.TextUnderIcon
+        Label {
+        text: button.text + button.items[currentSelection]
+        clip: true
+        wrapMode: Text.WordWrap
+        verticalAlignment: Text.AlignVCenter
+        horizontalAlignment: Text.AlignHCenter
+        anchors.fill: parent
         }
         onClicked: {
-            currentSelection = (currentSelection + 1) % items.length;
-            selectionChanged(button.items[currentSelection]);
+            //rootItem.visible = !rootItem.visible
+            if(rootItem.state == "Invisible")
+                rootItem.state = "Visible"
+            else
+                rootItem.state = "Invisible"
         }
     }
+    Item {
+        state: "Invisible"
+        id:rootItem
+        states: [
+            State{
+                name: "Visible"
+                PropertyChanges{target: rootItem; opacity: 1.0}
+                PropertyChanges{target: rootItem; visible: true}
+            },
+            State{
+                name:"Invisible"
+                PropertyChanges{target: rootItem; opacity: 0.0}
+                PropertyChanges{target: rootItem; visible: false}
+            }
+        ]
+        transitions: [
+                Transition {
+                    from: "Visible"
+                    to: "Invisible"
+
+                    SequentialAnimation{
+                       NumberAnimation {
+                           target: rootItem
+                           property: "opacity"
+                           duration: 500
+                           easing.type: Easing.InOutQuad
+                       }
+                       NumberAnimation {
+                           target: rootItem
+                           property: "visible"
+                           duration: 0
+                       }
+                    }
+                },
+                Transition {
+                    from: "Invisible"
+                    to: "Visible"
+                    SequentialAnimation{
+                       NumberAnimation {
+                           target: rootItem
+                           property: "visible"
+                           duration: 0
+                       }
+                       NumberAnimation {
+                           target: rootItem
+                           property: "opacity"
+                           duration: 500
+                           easing.type: Easing.InOutQuad
+                       }
+                    }
+                }
+            ]
+    Column {
+        id: options
+    Repeater {
+        model: items.length
+        Button {
+            implicitWidth: buttonText.implicitWidth + 10
+            text: button.items[index]
+            anchors.right: parent.left
+            onClicked:  {
+                rootItem.state = "Invisible"
+                currentSelection = index
+                selectionChanged(button.items[index]);
+            }
+        }
+    }
+    }
+}
 }

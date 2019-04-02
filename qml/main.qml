@@ -35,7 +35,9 @@ import QtQuick.Window 2.12
 import QtCharts 2.3
 import QtQuick.Controls.Styles 1.4
 import QtQml.StateMachine 1.12
-
+//4effcf
+//101ad9
+//2830d7
 //![1]
 ApplicationWindow {
     id: window
@@ -48,7 +50,7 @@ ApplicationWindow {
         color: "#2b2d37"
     }
 
-    title: "Qt Quick Controls 2 - Imagine Style Example: Automotive"
+    title: "openMSA"
     Item {
         property int gettingInput: 0
         property int none: 0
@@ -104,12 +106,23 @@ ApplicationWindow {
                     main.freq_stop_base = base_value
                     main.freq_stop_multiplier = multiplier
                 }
+                else if(controlPanel.isFrequency_step_requested) {
+                    controlPanel.isFrequency_step_requested = false
+                    main.freq_step_base = base_value
+                    main.freq_step_multiplier = multiplier
+                }
             }
             onCanceled: {
                 if(controlPanel.isFrequency_center_requested)
                     controlPanel.isFrequency_center_requested = false
                 else if(controlPanel.isFrequency_span_requested)
                     controlPanel.isFrequency_span_requested = false
+                else if(controlPanel.isFrequency_start_requested)
+                    controlPanel.isFrequency_start_requested = false
+                else if(controlPanel.isFrequency_stop_requested)
+                    controlPanel.isFrequency_stop_requested = false
+                else if(controlPanel.isFrequency_step_requested)
+                    controlPanel.isFrequency_step_requested = false
                 controlPanel.focus = true
             }
             state:"idle"
@@ -117,6 +130,7 @@ ApplicationWindow {
 
         ScopeView {
             id: scopeView
+            objectName: "scope"
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             anchors.right: parent.right
@@ -133,11 +147,11 @@ ApplicationWindow {
             }
         }
         ControlPanel {
-
             id: controlPanel
+            objectName: "buttons"
             anchors.top: parent.top
             anchors.topMargin: 10
-            anchors.bottom: parent.bottom
+        //    anchors.bottom: parent.bottom
           //  anchors.left: parent.left
           //  anchors.leftMargin: 500
       //      anchors.left: scopeView.right

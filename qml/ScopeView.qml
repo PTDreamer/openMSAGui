@@ -37,6 +37,8 @@ ChartView {
     theme: ChartView.ChartThemeDark
     property bool openGL: true
     property bool openGLSupported: true
+    property double startFrequency: 0
+    property double stopFrequency: 10
     margins.right: 130
     onOpenGLChanged: {
         if (openGLSupported) {
@@ -65,8 +67,8 @@ ChartView {
 
     ValueAxis {
         id: axisX
-        min: 0
-        max: 400
+        min: startFrequency
+        max: stopFrequency
     }
 
     LineSeries {
@@ -88,13 +90,13 @@ ChartView {
     //![2]
         Timer {
         id: refreshTimer
-//        interval: 1 / 60 * 1000 // 60 Hz
-//        running: true
-//        repeat: true
-//        onTriggered: {
-//            dataSource.update(chartView.series(0));
-//            dataSource.update(chartView.series(1));
-//        }
+        interval: 1 / 60 * 1000 // 60 Hz
+        running: true
+        repeat: true
+        onTriggered: {
+            dataSource.update(chartView.series(0));
+            dataSource.update2(chartView.series(1));
+        }
     }
     //![2]
 

@@ -40,39 +40,75 @@ QT_CHARTS_USE_NAMESPACE
 Q_DECLARE_METATYPE(QAbstractSeries *)
 Q_DECLARE_METATYPE(QAbstractAxis *)
 
-DataSource::DataSource(QQuickView *appViewer, QObject *parent) :
+DataSource::DataSource(QObject *parent) :
     QObject(parent),
-    m_appViewer(appViewer),
-    m_index(-1)
+	m_index(-1),
+	scope(nullptr),
+	buttons(nullptr),
+	newScanConfig(false)
 {
     qRegisterMetaType<QAbstractSeries*>();
     qRegisterMetaType<QAbstractAxis*>();
 
     generateData(0, 5, 1024);
 
-	socket = new QTcpSocket(this);
-	connect(socket, SIGNAL(connected()), this, SLOT(connected()));
-	connect(socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
-	connect(socket, SIGNAL(readyRead()), this, SLOT(readyRead()));
-	connect(socket, SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWritten(qint64)));
+	client = new ComProtocol(this, 3);
+    client->setServerPort(1234);
+	client->setServerAddress("127.0.0.1");
+    client->setAutoClientReconnection(true);
+	bool connected = client->connectToServer();
+    qDebug() << "Is client connected:" << connected;
 
-	qDebug() << "Connecting,..";
-
-	socket->connectToHost("192.168.4.131", 1234);
+	connect(client, &ComProtocol::packetReceived, this, &DataSource::packetReceived);
 }
 
 void DataSource::update(QAbstractSeries *series)
 {
-    if (series) {
-        QXYSeries *xySeries = static_cast<QXYSeries *>(series);
-        m_index++;
-        if (m_index > m_data.count() - 1)
-            m_index = 0;
+	if (series) {
+		QXYSeries *xySeries = static_cast<QXYSeries *>(series);
+		m_index++;
+		if (m_index > m_data.count() - 1)
+			m_index = 0;
 
-        QVector<QPointF> points = m_data.at(m_index);
-        // Use replace instead of clear + append, it's optimized for performance
-        xySeries->replace(points);
+		QVector<QPointF> points = m_data.at(0);
+		QList<QPointF> pp = xySeries->points();
+		// Use replace instead of clear + append, it's optimized for performance
+		xySeries->replace(points);
 	}
+}
+void DataSource::update2(QAbstractSeries *series)
+{
+	if (series) {
+		QXYSeries *xySeries = static_cast<QXYSeries *>(series);
+		m_index++;
+		if (m_index > m_data.count() - 1)
+			m_index = 0;
+		if(m_data.size() <= 1)
+			return;
+		QVector<QPointF> points = m_data.at(1);
+		QList<QPointF> pp = xySeries->points();
+		// Use replace instead of clear + append, it's optimized for performance
+		xySeries->replace(points);
+	}
+}
+
+QObject *DataSource::getButtons() const
+{
+	return buttons;
+}
+
+void DataSource::setButtons(QObject *value)
+{
+	buttons = value;
+}
+QObject *DataSource::getScope() const
+{
+	return scope;
+}
+
+void DataSource::setScope(QObject *value)
+{
+	scope = value;
 }
 
 void DataSource::connected()
@@ -90,22 +126,60 @@ void DataSource::bytesWritten(qint64 bytes)
 
 }
 
-void DataSource::readyRead()
+void DataSource::packetReceived(ComProtocol::messageType type, QByteArray array)
 {
-	quint32 step;
-	quint32 mag;
-	static QByteArray arr;
-	arr = socket->readAll();
-	while (arr.contains("E")) {
-		QString s = arr.left(arr.indexOf("E")+1);
-		arr.remove(0, s.length());
-		step = s.mid(1,s.indexOf("V")-1).toDouble();
-		mag = s.mid(s.indexOf("V") + 1,s.indexOf("E") - s.indexOf("V") -1).toDouble();
-		qDebug() << step << mag << m_data.length();
-		if(m_data.length() > 0)
-			if(m_data[0].length() == 400) {
-				m_data[0][step].setY(mag);
+    ComProtocol::msg_dual_dac dd;
+    ComProtocol::messageType ttype;
+    ComProtocol::messageCommandType command;
+    quint32 msgNumber;
+    switch (type) {
+        case ComProtocol::DUAL_DAC:
+			client->unpackMessage(array, ttype, command, msgNumber, &dd);
+			if(m_data.length() > 1 && m_data[0].length() > dd.step && m_data[1].length() > dd.step ) {
+				m_data[0][int(dd.step)].setY(dd.mag);
+				m_data[0][int(dd.step)].setX(scanStarMHZ + dd.step * scanStepMHZ);
+				m_data[1][int(dd.step)].setY(dd.phase);
+				m_data[1][int(dd.step)].setX(scanStarMHZ + dd.step * scanStepMHZ);
 			}
+		break;
+		case ComProtocol::SCAN_CONFIG:
+			foreach (QVector<QPointF> row, m_data)
+				row.clear();
+			ComProtocol::msg_scan_config cfg;
+			client->unpackMessage(array, ttype, command, msgNumber, &cfg);
+			scope->setProperty("startFrequency", cfg.start);
+			scope->setProperty("stopFrequency", cfg.stop);
+			scanStepMHZ = cfg.step_freq;
+			scanStarMHZ = cfg.start;
+			newScanConfig = true;
+			qDebug() << cfg.start << cfg.stop;
+			QVector<QPointF> v;
+			for (quint32 x = 0;x < cfg.steps_number;++x) {
+				QPointF p;
+				p.setX(x * scanStepMHZ);
+				p.setY(0);
+				v.append(p);
+			}
+			m_data.append(v);
+			m_data.append(v);
+			buttons->setProperty("freq_start_mult", cfg.start_multi);
+			buttons->setProperty("freq_start_val", cfg.start * 1000000 / cfg.start_multi);
+			buttons->setProperty("freq_stop_mult", cfg.start_multi);
+			buttons->setProperty("freq_stop_val", cfg.stop * 1000000 / cfg.stop_multi);
+			buttons->setProperty("freq_center_mult", cfg.center_freq_multi);
+			buttons->setProperty("freq_center_val", cfg.center_freq * 1000000 / cfg.stop_multi);
+			buttons->setProperty("freq_span_mult", cfg.span_freq_multi);
+			buttons->setProperty("freq_span_val", cfg.span_freq * 1000000 / cfg.span_freq_multi);
+			if(!cfg.isStepInSteps) {
+				buttons->setProperty("freq_step_mult", cfg.step_freq_multi);
+				buttons->setProperty("freq_step_val", cfg.step_freq * 1000000 / cfg.step_freq_multi);
+			}
+			else {
+				buttons->setProperty("freq_step_mult", 0);
+				buttons->setProperty("freq_step_val", cfg.steps_number);
+			}
+			//TODO isInverted
+		break;
 	}
 }
 
@@ -116,7 +190,7 @@ void DataSource::generateData(int type, int rowCount, int colCount)
 	m_data.clear();
 
 	QVector<QPointF> v;
-	for(int x = 0; x < 400; ++x) {
+	for(int x = 0; x < 2000; ++x) {
 		QPointF p;
 		p.setX(x);
 		p.setY(0);

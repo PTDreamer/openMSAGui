@@ -33,8 +33,6 @@ import QtQuick.Controls.Imagine 2.12
 import QtQuick.Controls 2.5
 
 ColumnLayout {
-    property alias openGLButton: openGLButton
-    property alias antialiasButton: antialiasButton
     property alias freq_center_val: freq_center.label_value
     property alias freq_center_mult: freq_center.multiplier
     property alias isFrequency_center_requested: freq_center.checked
@@ -71,14 +69,14 @@ ColumnLayout {
 
     z: 2
 
-    MultiButton2 {
+    MultiButton {
         id: openGLButton
         text: "Mode\n"
         items: ["SA", "VNA\nTransmission", "VNA\nReflection"]
         currentSelection: 1
         onSelectionChanged: openGlChanged(currentSelection == 1);
     }
-    MultiButton2 {
+    MultiButton {
         id:freq_mode
         text: "Frequency Mode\n"
         items: ["Center-Span", "Start-Stop"]
@@ -114,66 +112,10 @@ ColumnLayout {
         text: "Frequency\nStep"
         onCheckedChanged: frequency_step_requested(checked)
     }
-    Button {
-        leftPadding: 4
-        rightPadding: 4
-        topPadding: 12
-        bottomPadding: 12
-        implicitWidth: 90
-        implicitHeight: 60
-
-        text: "Ok"
-        onClicked: {
-            main.getFrequency()
-            console.log("getFreq")
-        }
-    }
     MultiButton {
-        text: "Graph: "
-        items: ["line", "scatter"]
-        currentSelection: 0
-        onSelectionChanged: seriesTypeChanged(items[currentSelection]);
-    }
-
-    MultiButton {
-        id: signalSourceButton
-        text: "Source: "
-        items: ["sin", "linear"]
-        currentSelection: 0
-        onSelectionChanged: signalSourceChanged(
-                                selection,
-                                5,
-                                sampleCountButton.items[sampleCountButton.currentSelection]);
-    }
-
-    MultiButton {
-        id: sampleCountButton
-        text: "Samples: "
-        items: ["6", "128", "1024", "10000"]
-        currentSelection: 2
-        onSelectionChanged: signalSourceChanged(
-                                signalSourceButton.items[signalSourceButton.currentSelection],
-                                5,
-                                selection);
-    }
-
-    MultiButton {
-        text: "Refresh rate: "
-        items: ["1", "24", "60"]
-        currentSelection: 2
-        onSelectionChanged: refreshRateChanged(items[currentSelection]);
-    }
-
-    MultiButton {
-        id: antialiasButton
-        text: "Antialias: "
-        items: ["OFF", "ON"]
-        enabled: true
-        currentSelection: 0
-        onSelectionChanged: antialiasingEnabled(currentSelection == 1);
-    }
-    Button {
-        width: 5
-        text: "Ok"
+        text: "Frequency\nStep mode\n"
+        items: ["Manual", "Auto"]
+        currentSelection: 1
+        onSelectionChanged: openGlChanged(currentSelection == 1);
     }
 }

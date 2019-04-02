@@ -41,10 +41,12 @@ Item {
         else if(multiplier === 1)
             return label_value + "Hz"
         else if(multiplier === 1000)
-            return label_value + "Kz"
+            return label_value + "KHz"
         else if(multiplier === 1000000)
-            return label_value + "Mz"
+            return label_value + "MHz"
         else if(multiplier === 1000000000)
-            return label_value + "Gz"
+            return label_value + "GHz"
+        else if(multiplier === 0)
+            return label_value + "Steps"
     }
 }

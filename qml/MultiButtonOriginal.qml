@@ -27,56 +27,44 @@
 **
 ****************************************************************************/
 
-#ifndef DATASOURCE_H
-#define DATASOURCE_H
+import QtQuick 2.0
+import QtQuick.Controls 1.0
+import QtQuick.Controls.Styles 1.0
+import QtQuick.Controls.Imagine 2.12
 
-#include <QtCore/QObject>
-#include <QtCharts/QAbstractSeries>
-#include <QTcpSocket>
-#include <QAbstractSocket>
-#include "../openmsa/shared/comprotocol.h"
-QT_BEGIN_NAMESPACE
-class QQuickView;
-QT_END_NAMESPACE
+Item {
+    id: button
 
-QT_CHARTS_USE_NAMESPACE
+    property string text: "Option: "
+    property variant items: ["first"]
+    property int currentSelection: 0
+    signal selectionChanged(variant selection)
 
-class DataSource : public QObject
-{
-    Q_OBJECT
-public:
-    explicit DataSource(QObject *parent = 0);
+    signal clicked
 
-	QObject *getScope() const;
-	void setScope(QObject *value);
+    implicitWidth: buttonText.implicitWidth + 5
+    implicitHeight: buttonText.implicitHeight + 10
 
-	QObject *getButtons() const;
-	void setButtons(QObject *value);
+    Button {
+        id: buttonText
+        width: parent.width
+        height: parent.height
 
-Q_SIGNALS:
-
-public slots:
-	void generateData(int type, int rowCount, int colCount);
-
-private:
-    QQuickView *m_appViewer;
-    QList<QVector<QPointF> > m_data;
-    int m_index;
-public slots:
-
-	void connected();
-	void disconnected();
-	void bytesWritten(qint64 bytes);
-    void packetReceived(ComProtocol::messageType, QByteArray);
-	void update(QAbstractSeries *series);
-	void update2(QAbstractSeries *series);
-private:
-	QObject *scope;
-	QObject *buttons;
-    ComProtocol *client;
-	bool newScanConfig;
-	double scanStepMHZ;
-	double scanStarMHZ;
-};
-
-#endif // DATASOURCE_H
+        style: ButtonStyle {
+            label: Component {
+                Text {
+                    text: button.text + button.items[currentSelection]
+                    clip: true
+                    wrapMode: Text.WordWrap
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                    anchors.fill: parent
+                }
+            }
+        }
+        onClicked: {
+            currentSelection = (currentSelection + 1) % items.length;
+            selectionChanged(button.items[currentSelection]);
+        }
+    }
+}
