@@ -44,8 +44,10 @@ QT_CHARTS_USE_NAMESPACE
 class DataSource : public QObject
 {
     Q_OBJECT
+	Q_PROPERTY(QString infoText READ getInfoText WRITE setInfoText NOTIFY infoTextChanged)
+	Q_PROPERTY(QString errorText READ getErrorText WRITE setErrorText NOTIFY errorTextChanged)
 public:
-    explicit DataSource(QObject *parent = 0);
+	explicit DataSource(QObject *parent = nullptr);
 
 	QObject *getScope() const;
 	void setScope(QObject *value);
@@ -53,8 +55,16 @@ public:
 	QObject *getButtons() const;
 	void setButtons(QObject *value);
 
-Q_SIGNALS:
+	QString getInfoText() const;
+	void setInfoText(const QString &value);
 
+	QString getErrorText() const;
+	void setErrorText(const QString &value);
+
+Q_SIGNALS:
+signals:
+	void infoTextChanged(QString);
+	void errorTextChanged(QString);
 public slots:
 	void generateData(int type, int rowCount, int colCount);
 
@@ -63,20 +73,26 @@ private:
     QList<QVector<QPointF> > m_data;
     int m_index;
 public slots:
-
 	void connected();
 	void disconnected();
 	void bytesWritten(qint64 bytes);
     void packetReceived(ComProtocol::messageType, QByteArray);
 	void update(QAbstractSeries *series);
 	void update2(QAbstractSeries *series);
+	void handleScanChanges(int meta = 0);
 private:
+	bool suspendChangesSignal;
 	QObject *scope;
 	QObject *buttons;
     ComProtocol *client;
 	bool newScanConfig;
 	double scanStepMHZ;
 	double scanStarMHZ;
+	QHash<unsigned int, double> finalFiltersBW; // in MHz
+	unsigned int currentFinalFilter;
+	QString InfoText;
+	QString ErrorText;
+	void handleErrors(QStringList list, QStringList fatal);
 };
 
 #endif // DATASOURCE_H

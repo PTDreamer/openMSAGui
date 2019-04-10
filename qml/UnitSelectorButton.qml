@@ -96,6 +96,7 @@ Item {
         anchors.fill: parent
         anchors.margins: -5
         onClicked: {
+            console.log("aki")
             if(button.checkbox) {
             button.clicked()
             checked = true

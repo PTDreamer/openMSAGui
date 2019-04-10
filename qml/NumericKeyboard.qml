@@ -10,8 +10,8 @@ Item {
     signal submit (var totalValue, var baseValue, var multiplier)
     signal canceled()
     signal keyPressed(var value)
-    anchors.centerIn: parent
-    anchors.horizontalCenter: parent.horizontalCenter
+
+    anchors.fill: parent
     width: numericKeyboard.width
     height: numericKeyboard.height
     focus: false
@@ -44,6 +44,7 @@ Item {
             name: "getNumbers"
             StateChangeScript {
                 script: {
+                    display.clear()
                     keyPressed.connect(numericKeyboard.handleKey)
                     keyPressed.disconnect(unitSelector_id.handleKey)
                 }
@@ -68,10 +69,8 @@ Item {
                 script: {
                     keyPressed.connect(numericKeyboard.handleKey)
                     keyPressed.disconnect(unitSelector_id.handleKey)
-                    console.log("getNumbersWithSteps")
                     unitSelector_id.showSteps = true
                     unitSelector_id.showSteps2 = true
-                    console.log("getNumbersWithSteps" + unitSelector_id.showSteps)
                 }
             }
             PropertyChanges {
@@ -131,9 +130,10 @@ Item {
                     fullkeyboard.value = unitSelector_id.retval * numericKeyboard.retvalue
                     fullkeyboard.base_value = numericKeyboard.retvalue
                     fullkeyboard.multiplier = unitSelector_id.retval
+                    console.log("AAA"+fullkeyboard.value)
                     keyPressed.disconnect(unitSelector_id.handleKey)
                     keyPressed.disconnect(numericKeyboard.handleKey)
-                    console.log(unitSelector_id.retval  + '*' + numericKeyboard.value)
+                    console.log(unitSelector_id.retval  + '*' + numericKeyboard.retvalue)
                     fullkeyboard.submit(unitSelector_id.retval * numericKeyboard.retvalue, numericKeyboard.retvalue, unitSelector_id.retval);
                     unitSelector_id.showSteps = false
                 }
@@ -171,18 +171,20 @@ Item {
         onClicked: {
             if(fullkeyboard.state != "canceled")
                 fullkeyboard.state = "canceled"
+            console.log("numericKeyboard");
         }
-        x:0 - parent.parent.x
+        x: 0 - parent.parent.x
         y:0 - parent.parent.y
-        width: fullkeyboard.state == "canceled"? 0:window.width
-        height: fullkeyboard.state == "canceled"? 0 : window.height
-
+        width: window.width
+        height: window.height
+        visible: fullkeyboard.state == "canceled" ? false : true
         Rectangle{
             id:numericKeyboard
             color: "black"
             width: icol.width + 20
             height: igrid.height + rect.height + 20
             property double retvalue: 0
+            anchors.centerIn: parent
             MouseArea {
                 anchors.fill: parent
             }
@@ -219,7 +221,6 @@ Item {
                         font.pointSize: parent.height - 20
                         text: qsTr("")
                         function appendDigit(digit) {
-                            console.log(digit)
                             display.text = text + digit
                         }
                         function removeLast() {
@@ -234,6 +235,7 @@ Item {
                         }
                         function submit() {
                             numericKeyboard.retvalue = (parseFloat(display.text))
+                            console.log(numericKeyboard.retvalue)
                             fullkeyboard.state = "getUnits"
                             console.log("SUBMIT" + numericKeyboard.retvalue)
                         }
@@ -262,7 +264,7 @@ Item {
                     NumericKeyboardButton { text: "9" }
                     NumericKeyboardButton { text: "."; id:dotkey ; dimmable:true}
                     NumericKeyboardButton { text: "0" }
-                    NumericKeyboardButton { text: " "; color: "#6da43d"; operator: true; dimmable: true }
+                    NumericKeyboardButton { text: "-"; id:minuskey ; dimmable:true}
                     NumericKeyboardButton { text: "C"; color: "#6da43d"; operator: true }
                     NumericKeyboardButton { id:submitkey; text: "✔"; color: "#6da43d"; operator: true; dimmable: true; dimmed:true}
                     NumericKeyboardButton { text: "X"; color: "#6da43d"; operator: true }
@@ -270,12 +272,23 @@ Item {
                 }
             }
         }
+        MouseArea {
+            onClicked: {
+                if(fullkeyboard.state != "canceled")
+                    fullkeyboard.state = "canceled"
+                console.log("unitSelector_id");
+            }
+            x:0 - parent.parent.x
+            y:0 - parent.parent.y
+            width: window.width
+            height: window.height
+            visible: fullkeyboard.state == "canceled" || fullkeyboard.state !="getUnits" ? false : true
 
         UnitSelector {
             id:unitSelector_id
             visible: false
             property int retval: 0
-            anchors.centerIn: numericKeyboard
+            anchors.centerIn: parent
             onSubmit: {
                 retval = value
                 fullkeyboard.state = "finished"
@@ -284,6 +297,7 @@ Item {
                 retval = value
                 fullkeyboard.state = "canceled"
             }
+        }
         }
     }
 }

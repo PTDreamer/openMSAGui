@@ -28,11 +28,11 @@
 ****************************************************************************/
 
 import QtQuick 2.1
-import QtQuick.Layouts 1.0
+import QtQuick.Layouts 1.12
 import QtQuick.Controls.Imagine 2.12
 import QtQuick.Controls 2.5
 
-ColumnLayout {
+Item {
     property alias freq_center_val: freq_center.label_value
     property alias freq_center_mult: freq_center.multiplier
     property alias isFrequency_center_requested: freq_center.checked
@@ -53,69 +53,147 @@ ColumnLayout {
     property alias freq_step_mult: freq_step.multiplier
     property alias isFrequency_step_requested: freq_step.checked
 
-    spacing: 8
+    property alias sg_freq_or_offset_val: sg_freq_or_offset.label_value
+    property alias sg_freq_or_offset_mult: sg_freq_or_offset.multiplier
+    property alias isSg_freq_or_offset_requested: sg_freq_or_offset.checked
+
+    property int siggen_function: 0
+
+    property int scanType: scanTypeButton.currentSelection
+    property bool frequencyStepModeAuto: true
+    property bool scanInverted: false
     Layout.fillHeight: true
-    signal animationsEnabled(bool enabled)
-    signal seriesTypeChanged(string type)
     signal refreshRateChanged(variant rate);
-    signal signalSourceChanged(string source, int signalCount, int sampleCount);
-    signal antialiasingEnabled(bool enabled)
-    signal openGlChanged(bool enabled)
     signal center_frequency_requested(var value)
     signal frequency_span_requested(var value)
     signal start_frequency_requested(var value)
     signal stop_frequency_requested(var value)
     signal frequency_step_requested(var value)
+    signal sg_frequency_requested(var value)
 
+    property bool isStartStopMode: (freq_mode.currentSelection == 1)
+    anchors.right: parent.right
+    height: parent.height
+    width: 100
     z: 2
+    Item {
+        id:baseBar
+        width: but1.height // width as TabBar height before rotation
+          height: parent.height
+          anchors.right: slayout.left
+    TabBar {
+        width: parent.height
+        height: but1.height
+          id: bar
+          transform: [
+              Rotation { origin.x: 0; origin.y: 0; angle: -90} // rotate around the upper left corner counterclockwise
+              ,Translate { y: 200; x: 0 } // move to the bottom of the base
+          ]
+          TabButton {
+              width: 100
+              id: but1
+              text: qsTr("MSA")
+          }
+          TabButton {
+              width: 100
+              id: secondBtn
+              text: qsTr("TG")
+          }
 
-    MultiButton {
-        id: openGLButton
-        text: "Mode\n"
-        items: ["SA", "VNA\nTransmission", "VNA\nReflection"]
-        currentSelection: 1
-        onSelectionChanged: openGlChanged(currentSelection == 1);
+      }
     }
-    MultiButton {
-        id:freq_mode
-        text: "Frequency Mode\n"
-        items: ["Center-Span", "Start-Stop"]
-        currentSelection: 1
-        onSelectionChanged: openGlChanged(currentSelection == 1);
-    }
-    ButtonWithLabelAndValue {
-        id:freq_center
-        text: "Center"
-        onCheckedChanged: center_frequency_requested(checked)
-        visible: freq_mode.currentSelection == 0 ? true : false
-    }
-    ButtonWithLabelAndValue {
-        id:freq_span
-        text: "Span"
-        onCheckedChanged: frequency_span_requested(checked)
-        visible: freq_mode.currentSelection == 0 ? true : false
-    }
-    ButtonWithLabelAndValue {
-        id:freq_start
-        text: "Frequency\nStart"
-        onCheckedChanged: start_frequency_requested(checked)
-        visible: freq_mode.currentSelection == 1 ? true : false
-    }
-    ButtonWithLabelAndValue {
-        id:freq_stop
-        text: "Frequency\nStop"
-        onCheckedChanged: stop_frequency_requested(checked)
-        visible: freq_mode.currentSelection == 1 ? true : false
-    }
-    ButtonWithLabelAndValue {
-        id:freq_step
-        text: "Frequency\nStep"
-        onCheckedChanged: frequency_step_requested(checked)
-    }
-    MultiButton {
-        text: "Frequency\nStep mode\n"
-        items: ["Manual", "Auto"]
-        currentSelection: 1
-        onSelectionChanged: openGlChanged(currentSelection == 1);
+    StackLayout {
+        id: slayout
+        anchors.right: parent.right
+        anchors.top: parent.top
+         width: freq_mode.width
+         currentIndex: bar.currentIndex
+         Item {
+             id: msa
+             ColumnLayout {
+                 spacing: 0
+                MultiButton {
+                    id: scanTypeButton
+                    text: "Mode\n"
+                    items: ["SA", "VNA\nTransmission", "VNA\nReflection", "SNA"]
+                    currentSelection: 0
+                    onSelectionChanged: dataSource.handleScanChanges();
+                }
+
+                MultiButton {
+                    id:freq_mode
+                    text: "Frequency Mode\n"
+                    items: ["Center-Span", "Start-Stop"]
+                    currentSelection: 0;
+                    onSelectionChanged: dataSource.handleScanChanges(1);
+                }
+                ButtonWithLabelAndValue {
+                    id:freq_center
+                    text: "Center"
+                    onCheckedChanged: center_frequency_requested(checked)
+                    visible: freq_mode.currentSelection == 0 ? true : false
+                    onLabel_valueChanged:  dataSource.handleScanChanges();
+                }
+                ButtonWithLabelAndValue {
+                    id:freq_span
+                    text: "Span"
+                    onCheckedChanged: frequency_span_requested(checked)
+                    visible: freq_mode.currentSelection == 0 ? true : false
+                    onLabel_valueChanged:  dataSource.handleScanChanges();
+                }
+                ButtonWithLabelAndValue {
+                    id:freq_start
+                    text: "Frequency\nStart"
+                    onCheckedChanged: start_frequency_requested(checked)
+                    visible: freq_mode.currentSelection == 1 ? true : false
+                    onLabel_valueChanged:  dataSource.handleScanChanges();
+                }
+                ButtonWithLabelAndValue {
+                    id:freq_stop
+                    text: "Frequency\nStop"
+                    onCheckedChanged: stop_frequency_requested(checked)
+                    visible: freq_mode.currentSelection == 1 ? true : false
+                    onLabel_valueChanged:  dataSource.handleScanChanges();
+                }
+                ButtonWithLabelAndValue {
+                    id:freq_step
+                    text: "Frequency\nStep"
+                    onCheckedChanged: frequency_step_requested(checked)
+                    onLabel_valueChanged:  dataSource.handleScanChanges();
+                }
+                MultiButton {
+                    text: "Frequency\nStep mode\n"
+                    items: ["Manual", "Auto"]
+                    currentSelection: (frequencyStepModeAuto) ? 1 : 0;
+                    onSelectionChanged: dataSource.handleScanChanges();
+                }
+                MultiButton {
+                    text: "Scan\nDirection\n"
+                    items: ["Normal", "Inverted"]
+                    currentSelection: (scanInverted) ? 1 : 0;
+                    onSelectionChanged: dataSource.handleScanChanges();
+                }
+             }
+         }
+         Item {
+             id: tg
+             ColumnLayout {
+                 spacing: 0
+                MultiButton {
+                    id:siggen
+                    text: "SigGen\n"
+                    items: ["Off", "SG", "TG", "TG-Inv"];
+                    currentSelection: siggen_function
+                    onSelectionChanged: dataSource.handleScanChanges();
+                }
+                ButtonWithLabelAndValue {
+                    id:sg_freq_or_offset
+                    text: (siggen.currentSelection == 1) ? "SG Frequency\n" : "TG offset";
+                    onLabel_valueChanged:  dataSource.handleScanChanges();
+                    visible: (siggen.currentSelection != 0)
+                    onCheckedChanged: sg_frequency_requested(checked);
+                }
+             }
+         }
     }
 }

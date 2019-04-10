@@ -45,14 +45,10 @@ Item {
     signal clicked
 
     implicitWidth: buttonText.implicitWidth + 5
-    implicitHeight: buttonText.implicitHeight + 10
+    implicitHeight: buttonText.implicitHeight
 
     Button {
         id: buttonText
-        leftPadding: 4
-        rightPadding: 4
-        topPadding: 12
-        bottomPadding: 12
         implicitWidth: 90
         implicitHeight: 60
 

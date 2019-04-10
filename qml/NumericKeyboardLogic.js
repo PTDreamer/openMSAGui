@@ -28,7 +28,9 @@ function disabled(op) {
     else if(op === "√" && (display.getText().length === 0 || (display.getText().length === 1 && display.getText().search(/\./) !== -1))) {
         return true
     }
-    else if (display.getText() === "" && !((op >= "0" && op <= "9")))
+    else if(display.getText().length !== 0 && op === "-")
+        return true;
+    else if (display.getText() === "" && !((op >= "0" && op <= "9")) && op !== "-")
         return true
     else if (op === "." && display.getText().search(/\./) !== -1) {
         return true

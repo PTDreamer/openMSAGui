@@ -8,7 +8,7 @@ import QtQuick.Controls.Styles 1.4
 Item {
     id: button
     implicitWidth: buttonText.implicitWidth + 5
-    implicitHeight: buttonText.implicitHeight + 10
+    implicitHeight: buttonText.implicitHeight
     property string text: ""
     property int multiplier: -1
     property var label_value: 0
@@ -16,10 +16,6 @@ Item {
     Button {
         id: buttonText
         checkable: true
-        leftPadding: 4
-        rightPadding: 4
-        topPadding: 12
-        bottomPadding: 12
         implicitWidth: 90
         implicitHeight: 60
         icon.name: "placeholder"

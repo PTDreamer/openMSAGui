@@ -25,5 +25,6 @@
         <file>automotive/44x44@2/settings.png</file>
         <file>automotive/44x44@2/statistics.png</file>
         <file>automotive/44x44@2/windows.png</file>
+        <file>smith_chart_red.png</file>
     </qresource>
 </RCC>
