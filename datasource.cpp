@@ -1,31 +1,28 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the Qt Charts module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:GPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3 or (at your option) any later version
-** approved by the KDE Free Qt Foundation. The licenses are as published by
-** the Free Software Foundation and appearing in the file LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+/**
+ ******************************************************************************
+ *
+ * @file       datasource.cpp
+ * @author     Jose Barros (AKA PT_Dreamer) josemanuelbarros@gmail.com 2019
+ * @brief       file
+ * @see        The GNU Public License (GPL) Version 3
+ * @defgroup
+ * @{
+ *
+ *****************************************************************************/
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, see <http://www.gnu.org/licenses/>
+ */
 
 #include "datasource.h"
 #include <QtCharts/QXYSeries>
@@ -51,10 +48,9 @@ DataSource::DataSource(QObject *parent) :
     qRegisterMetaType<QAbstractSeries*>();
     qRegisterMetaType<QAbstractAxis*>();
 
-    generateData(0, 5, 1024);
-
 	client = new ComProtocol(this, 3);
     client->setServerPort(1234);
+	//client->setServerAddress("192.168.4.131");
 	client->setServerAddress("127.0.0.1");
     client->setAutoClientReconnection(true);
 	bool connected = client->connectToServer();
@@ -394,52 +390,4 @@ void DataSource::packetReceived(ComProtocol::messageType type, QByteArray array)
 			suspendChangesSignal = false;
 		break;
 	}
-}
-
-void DataSource::generateData(int type, int rowCount, int colCount)
-{
-	foreach (QVector<QPointF> row, m_data)
-		row.clear();
-	m_data.clear();
-
-	QVector<QPointF> v;
-	for(int x = 0; x < 2000; ++x) {
-		QPointF p;
-		p.setX(x);
-		p.setY(0);
-		v.append(p);
-	}
-	m_data.append(v);
-	return;
-    // Remove previous data
-    foreach (QVector<QPointF> row, m_data)
-        row.clear();
-    m_data.clear();
-
-    // Append the new data depending on the type
-    for (int i(0); i < rowCount; i++) {
-        QVector<QPointF> points;
-        points.reserve(colCount);
-        for (int j(0); j < colCount; j++) {
-            qreal x(0);
-            qreal y(0);
-            switch (type) {
-            case 0:
-                // data with sin + random component
-                y = qSin(3.14159265358979 / 50 * j) + 0.5 + (qreal) rand() / (qreal) RAND_MAX;
-                x = j;
-                break;
-            case 1:
-                // linear data
-                x = j;
-                y = (qreal) i / 10;
-                break;
-            default:
-                // unknown, do nothing
-                break;
-            }
-            points.append(QPointF(x, y));
-        }
-        m_data.append(points);
-    }
 }

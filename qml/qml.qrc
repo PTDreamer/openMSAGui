@@ -13,5 +13,6 @@
         <file>UnitSelectorLogic.js</file>
         <file>ButtonWithLabelAndValue.qml</file>
         <file>MessageBox.qml</file>
+        <file>marker.qml</file>
     </qresource>
 </RCC>

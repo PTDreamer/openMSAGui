@@ -1,1 +1,1 @@
-qmloscilloscope
+openmsagui
