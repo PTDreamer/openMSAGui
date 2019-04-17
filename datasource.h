@@ -32,6 +32,8 @@
 #include <QTcpSocket>
 #include <QAbstractSocket>
 #include "../openmsa/shared/comprotocol.h"
+#include "settings.h"
+
 QT_BEGIN_NAMESPACE
 class QQuickView;
 QT_END_NAMESPACE
@@ -44,7 +46,7 @@ class DataSource : public QObject
 	Q_PROPERTY(QString infoText READ getInfoText WRITE setInfoText NOTIFY infoTextChanged)
 	Q_PROPERTY(QString errorText READ getErrorText WRITE setErrorText NOTIFY errorTextChanged)
 public:
-	explicit DataSource(QObject *parent = nullptr);
+	explicit DataSource(settings *settings, QObject *parent = nullptr);
 
 	QObject *getScope() const;
 	void setScope(QObject *value);
@@ -68,6 +70,7 @@ private:
     QQuickView *m_appViewer;
     QList<QVector<QPointF> > m_data;
     int m_index;
+	settings *m_settings;
 public slots:
 	void connected();
 	void disconnected();
@@ -76,6 +79,7 @@ public slots:
 	void update(QAbstractSeries *series);
 	void update2(QAbstractSeries *series);
 	void handleScanChanges(int meta = 0);
+	void updateSettings();
 private:
 	bool suspendChangesSignal;
 	QObject *scope;

@@ -34,21 +34,26 @@
 #include <markerx.h>
 #include <QQuickWindow>
 #include <markerfactory.h>
+#include "settings.h"
 
 int main(int argc, char *argv[])
 {
 	QQuickStyle::setStyle("Imagine");
-	QApplication::setApplicationName("Automotive");
-	QApplication::setOrganizationName("QtProject");
 	QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 	QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 	QApplication app(argc, argv);
 	app.setWindowIcon(QIcon(":/icons/smith_chart_red.png"));
+	app.setOrganizationName("JBTech");
+	app.setApplicationName("openMSA");
+	app.setApplicationVersion("1.0.0");
+
 	QIcon::setThemeName("automotive");
 	QQmlApplicationEngine engine;
-	DataSource dataSource(&engine);
+	settings m_settings;
+	DataSource dataSource(&m_settings, &engine);
 	qmlRegisterType<markerX>("JBstuff",	1,	0,	"Marker");
 	engine.rootContext()->setContextProperty("dataSource", &dataSource);
+	engine.rootContext()->setContextProperty("AppSettings",&m_settings);
 
 	engine.load(QUrl("qrc:/qml/main.qml"));
 	if (engine.rootObjects().isEmpty())

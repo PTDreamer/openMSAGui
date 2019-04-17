@@ -61,7 +61,7 @@ Item {
 
     property int scanType: scanTypeButton.currentSelection
     property bool frequencyStepModeAuto: true
-    property bool scanInverted: false
+    property int scanInverted: inv_scan.currentSelection
     Layout.fillHeight: true
     signal refreshRateChanged(variant rate);
     signal center_frequency_requested(var value)
@@ -168,9 +168,10 @@ Item {
                     onSelectionChanged: dataSource.handleScanChanges();
                 }
                 MultiButton {
+                    id:inv_scan
                     text: "Scan\nDirection\n"
                     items: ["Normal", "Inverted"]
-                    currentSelection: (scanInverted) ? 1 : 0;
+                    currentSelection: 0;
                     onSelectionChanged: dataSource.handleScanChanges();
                 }
              }

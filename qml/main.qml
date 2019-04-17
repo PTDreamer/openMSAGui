@@ -49,7 +49,6 @@ ApplicationWindow {
     background: Rectangle {
         color: "#2b2d37"
     }
-
     title: "openMSA"
     Item {
         property int gettingInput: 0
@@ -59,11 +58,9 @@ ApplicationWindow {
 
         property bool freq_steps_in_steps: controlPanel.freq_step_multiplier === 0
 
-//        property int scanType: 0
+        //        property int scanType: 0
         id: main
         anchors.fill: parent
-
-
 
         ScopeView {
             id: scopeView
@@ -97,9 +94,9 @@ ApplicationWindow {
         //      anchors.left: scopeView.right
         anchors.right: parent.right
         anchors.rightMargin: 10
-//        freq_center_mult: main.freq_center_multiplier
+        //        freq_center_mult: main.freq_center_multiplier
 
-//        scanType: main.scanType
+        //        scanType: main.scanType
         //![1]
         focus: true
         onCenter_frequency_requested: {
@@ -163,6 +160,10 @@ ApplicationWindow {
             }
         }
     }
+    Settings {
+        id:settingsForm
+        visible: false
+    }
     NumericKeyboard {
         z:3
         id: numericKeyboard
@@ -217,5 +218,29 @@ ApplicationWindow {
         }
         state:"idle"
     }
-}
+    Image {
+        id: settingsIcon
+        source: "/icons/automotive/44x44/settings.png"
+        opacity: 0
+        MouseArea {
+            hoverEnabled: true
+            anchors.fill: parent
+            onEntered: settingsIcon.opacity = 1
+            onExited: {settingsIcon.opacity = 0
+            }
+            onClicked: settingsForm.visible = true
+        }
+        Component.onCompleted: animateOpacity.start();
+
+    }
+    NumberAnimation {
+        id: animateOpacity
+        target: settingsIcon
+        properties: "opacity"
+        from: 1.0
+        to: 0.0
+        loops: 3
+        // easing {type: Easing.OutBack; overshoot: 500}
+        duration: 1000
+    }}
 

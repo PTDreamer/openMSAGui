@@ -37,9 +37,10 @@ QT_CHARTS_USE_NAMESPACE
 Q_DECLARE_METATYPE(QAbstractSeries *)
 Q_DECLARE_METATYPE(QAbstractAxis *)
 
-DataSource::DataSource(QObject *parent) :
+DataSource::DataSource(settings *settings, QObject *parent) :
     QObject(parent),
 	m_index(-1),
+	m_settings(settings),
 	suspendChangesSignal(false),
 	scope(nullptr),
 	buttons(nullptr),
@@ -48,25 +49,18 @@ DataSource::DataSource(QObject *parent) :
     qRegisterMetaType<QAbstractSeries*>();
     qRegisterMetaType<QAbstractAxis*>();
 
-	client = new ComProtocol(this, 3);
-    client->setServerPort(1234);
-	//client->setServerAddress("192.168.4.131");
-	client->setServerAddress("127.0.0.1");
-    client->setAutoClientReconnection(true);
+	client = new ComProtocol(this, 0);
+	updateSettings();
 	bool connected = client->connectToServer();
     qDebug() << "Is client connected:" << connected;
-
+	connect(m_settings, &settings::appSettingsChanged, this, &DataSource::updateSettings);
 	connect(client, &ComProtocol::packetReceived, this, &DataSource::packetReceived);
 }
 
 void DataSource::update(QAbstractSeries *series)
 {
-	if (series) {
+	if (series && !m_data.isEmpty()) {
 		QXYSeries *xySeries = static_cast<QXYSeries *>(series);
-		m_index++;
-		if (m_index > m_data.count() - 1)
-			m_index = 0;
-
 		QVector<QPointF> points = m_data.at(0);
 		QList<QPointF> pp = xySeries->points();
 		// Use replace instead of clear + append, it's optimized for performance
@@ -110,7 +104,8 @@ void DataSource::handleScanChanges(int meta)
 		quint32 freqStepMult = buttons->property("freq_step_mult").toUInt();
 		double freqStepVal = buttons->property("freq_step_val").toDouble();
 		bool stepModeAuto = buttons->property("frequencyStepModeAuto").toBool();
-		bool scanInv = buttons->property("scanInverted").toBool();
+		uint scanInvi = buttons->property("scanInverted").toUInt();
+		bool scanInv = scanInvi == 1;
 		quint32 sgOffsetMult = buttons->property("sg_freq_or_offset_mult").toUInt();
 		double sgOffsetVal = buttons->property("sg_freq_or_offset_val").toDouble();
 		double startFreq = freqStartVal * freqStartMult / 1000000;
@@ -198,6 +193,13 @@ void DataSource::handleScanChanges(int meta)
 		cfg.band = -1; //TODO
 		client->sendMessage(ComProtocol::SCAN_CONFIG, ComProtocol::MESSAGE_SEND, &cfg);
 	}
+}
+
+void DataSource::updateSettings()
+{
+	client->setServerPort(m_settings->getAppSettings().m_port);
+	client->setServerAddress(m_settings->getAppSettings().m_ip);
+	client->setAutoClientReconnection(m_settings->getAppSettings().m_autoReconnect);
 }
 
 QString DataSource::getErrorText() const
@@ -297,7 +299,6 @@ void DataSource::packetReceived(ComProtocol::messageType type, QByteArray array)
 				row.clear();
 			ComProtocol::msg_scan_config cfg;
 			error = client->unpackMessage(array, ttype, command, msgNumber, &cfg);
-			qDebug() << "ok" << error;
 			scope->setProperty("startFrequency", cfg.start);
 			scope->setProperty("stopFrequency", cfg.stop);
 			scanStepMHZ = cfg.step_freq;
@@ -354,7 +355,7 @@ void DataSource::packetReceived(ComProtocol::messageType type, QByteArray array)
 				break;
 			}
 			buttons->setProperty("frequencyStepModeAuto", cfg.stepModeAuto);
-			buttons->setProperty("scanInverted", cfg.isInvertedScan);
+			buttons->setProperty("scanInverted", int(cfg.isInvertedScan));
 //			items: ["Off", "SG", "TG", "TG-Inv"];
 			double dtemp = 0;
 			quint32 qtemp = 0;

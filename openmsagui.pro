@@ -4,14 +4,16 @@ HEADERS += \
     datasource.h \
     ../openmsa/shared/comprotocol.h \
     markerx.h \
-    markerfactory.h
+    markerfactory.h \
+    settings.h
 
 SOURCES += \
     main.cpp \
     datasource.cpp \
     ../openmsa/shared/comprotocol.cpp \
     markerx.cpp \
-    markerfactory.cpp
+    markerfactory.cpp \
+    settings.cpp
 
 RESOURCES += \
     icons/icons.qrc \
