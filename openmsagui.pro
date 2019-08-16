@@ -2,7 +2,7 @@ QT += charts quick quickcontrols2
 
 HEADERS += \
     datasource.h \
-    ../openmsa/shared/comprotocol.h \
+    ../openMSA/shared/comprotocol.h \
     markerx.h \
     markerfactory.h \
     settings.h
@@ -10,7 +10,7 @@ HEADERS += \
 SOURCES += \
     main.cpp \
     datasource.cpp \
-    ../openmsa/shared/comprotocol.cpp \
+    ../openMSA/shared/comprotocol.cpp \
     markerx.cpp \
     markerfactory.cpp \
     settings.cpp

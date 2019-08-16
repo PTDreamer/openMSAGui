@@ -46,6 +46,9 @@ DataSource::DataSource(settings *settings, QObject *parent) :
 	buttons(nullptr),
 	newScanConfig(false)
 {
+	QVector<QPointF> v;
+	m_data.append(v);
+	m_data.append(v);
     qRegisterMetaType<QAbstractSeries*>();
     qRegisterMetaType<QAbstractAxis*>();
 
@@ -220,6 +223,16 @@ void DataSource::handleErrors(QStringList list, QStringList fatal) {
 	emit errorTextChanged(e);
 	emit infoTextChanged(s);
 }
+
+QVariantList DataSource::getFinalFilters() const
+{
+	return finalFilters;
+}
+
+void DataSource::setFinalFilters(const QVariantList &value)
+{
+	finalFilters = value;
+}
 QString DataSource::getInfoText() const
 {
 	return InfoText;
@@ -277,11 +290,17 @@ void DataSource::packetReceived(ComProtocol::messageType type, QByteArray array)
     switch (type) {
         case ComProtocol::DUAL_DAC:
 			client->unpackMessage(array, ttype, command, msgNumber, &dd);
+			if(!(m_data[0].length() > dd.step)) {
+				m_data[0].append(QPoint());
+			}
+			if(!(m_data[1].length() > dd.step)) {
+				m_data[1].append(QPoint());
+			}
 			if(m_data.length() > 1 && m_data[0].length() > dd.step && m_data[1].length() > dd.step ) {
 				m_data[0][int(dd.step)].setY(dd.mag);
-				m_data[0][int(dd.step)].setX(scanStarMHZ + dd.step * scanStepMHZ);
+				m_data[0][int(dd.step)].setX(scanStartMHZ + dd.step * scanStepMHZ);
 				m_data[1][int(dd.step)].setY(dd.phase);
-				m_data[1][int(dd.step)].setX(scanStarMHZ + dd.step * scanStepMHZ);
+				m_data[1][int(dd.step)].setX(scanStartMHZ + dd.step * scanStepMHZ);
 			}
 		break;
 	case ComProtocol::ERROR_INFO:
@@ -293,6 +312,12 @@ void DataSource::packetReceived(ComProtocol::messageType type, QByteArray array)
 			errorString.append("The hardware is in an error state");
 		handleErrors(infoString, errorString);
 		break;
+		case ComProtocol::FINAL_FILTER:
+			ComProtocol::msg_final_filter msg;
+			error = client->unpackMessage(array, ttype, command, msgNumber, &msg);
+			finalFilters << QVariant(msg.name);
+			emit finalFiltersChanged(finalFilters);
+		break;
 		case ComProtocol::SCAN_CONFIG:
 			suspendChangesSignal = true;
 			foreach (QVector<QPointF> row, m_data)
@@ -302,21 +327,12 @@ void DataSource::packetReceived(ComProtocol::messageType type, QByteArray array)
 			scope->setProperty("startFrequency", cfg.start);
 			scope->setProperty("stopFrequency", cfg.stop);
 			scanStepMHZ = cfg.step_freq;
-			scanStarMHZ = cfg.start;
+			scanStartMHZ = cfg.start;
 			newScanConfig = true;
 			qDebug() << cfg.start << cfg.stop;
 			QVector<QPointF> v;
 			foreach (QVector<QPointF> row, m_data)
 				row.clear();
-			m_data.clear();
-			for (quint32 x = 0;x < cfg.steps_number;++x) {
-				QPointF p;
-				p.setX(x * scanStepMHZ);
-				p.setY(0);
-				v.append(p);
-			}
-			m_data.append(v);
-			m_data.append(v);
 			buttons->setProperty("freq_start_mult", cfg.start_multi);
 			buttons->setProperty("freq_start_val", cfg.start * 1000000 / cfg.start_multi);
 			buttons->setProperty("freq_stop_mult", cfg.start_multi);

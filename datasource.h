@@ -31,8 +31,9 @@
 #include <QtCharts/QAbstractSeries>
 #include <QTcpSocket>
 #include <QAbstractSocket>
-#include "../openmsa/shared/comprotocol.h"
+#include "../openMSA/shared/comprotocol.h"
 #include "settings.h"
+#include <QVariantList>
 
 QT_BEGIN_NAMESPACE
 class QQuickView;
@@ -45,6 +46,7 @@ class DataSource : public QObject
     Q_OBJECT
 	Q_PROPERTY(QString infoText READ getInfoText WRITE setInfoText NOTIFY infoTextChanged)
 	Q_PROPERTY(QString errorText READ getErrorText WRITE setErrorText NOTIFY errorTextChanged)
+	Q_PROPERTY(QVariantList finalFilters READ getFinalFilters WRITE setFinalFilters NOTIFY finalFiltersChanged)
 public:
 	explicit DataSource(settings *settings, QObject *parent = nullptr);
 
@@ -60,10 +62,14 @@ public:
 	QString getErrorText() const;
 	void setErrorText(const QString &value);
 
+	QVariantList getFinalFilters() const;
+	void setFinalFilters(const QVariantList &value);
+
 Q_SIGNALS:
 signals:
 	void infoTextChanged(QString);
 	void errorTextChanged(QString);
+	void finalFiltersChanged(QVariantList);
 public slots:
 
 private:
@@ -87,12 +93,13 @@ private:
     ComProtocol *client;
 	bool newScanConfig;
 	double scanStepMHZ;
-	double scanStarMHZ;
+	double scanStartMHZ;
 	QHash<unsigned int, double> finalFiltersBW; // in MHz
 	unsigned int currentFinalFilter;
 	QString InfoText;
 	QString ErrorText;
 	void handleErrors(QStringList list, QStringList fatal);
+	QVariantList finalFilters;
 };
 
 #endif // DATASOURCE_H
