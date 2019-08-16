@@ -174,6 +174,13 @@ Item {
                     currentSelection: 0;
                     onSelectionChanged: dataSource.handleScanChanges();
                 }
+                MultiButton {
+                    id: finalFilter
+                    text: "Filter\n"
+                    items: dataSource.finalFilters
+                    currentSelection: 0
+                    onSelectionChanged: dataSource.handleScanChanges();
+                }
              }
          }
          Item {
