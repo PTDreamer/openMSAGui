@@ -11,8 +11,8 @@ env:
 before_install:
 
 install:
-  - cd ${TRAVIS_BUILD_DIR}
-  - git clone https://github.com/PTDreamer/openMSA.git
+  - git clone https://github.com/PTDreamer/openMSA.git ${TRAVIS_BUILD_DIR}/openMSA
+  - ls ${TRAVIS_BUILD_DIR}
   - cd ${TRAVIS_BUILD_DIR}/non-interactive-qt-installer
   - ${RUNNER}
   - cd ${TRAVIS_BUILD_DIR}
