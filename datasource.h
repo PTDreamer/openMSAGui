@@ -31,7 +31,7 @@
 #include <QtCharts/QAbstractSeries>
 #include <QTcpSocket>
 #include <QAbstractSocket>
-#include "../openMSA/shared/comprotocol.h"
+#include <comprotocol.h>
 #include "settings.h"
 #include <QVariantList>
 
@@ -49,7 +49,7 @@ class DataSource : public QObject
 	Q_PROPERTY(QVariantList finalFilters READ getFinalFilters WRITE setFinalFilters NOTIFY finalFiltersChanged)
 public:
 	explicit DataSource(settings *settings, QObject *parent = nullptr);
-
+	virtual ~DataSource() {}
 	QObject *getScope() const;
 	void setScope(QObject *value);
 

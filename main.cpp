@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 	QApplication app(argc, argv);
 	app.setWindowIcon(QIcon(":/icons/smith_chart_red.png"));
 	app.setOrganizationName("JBTech");
-	app.setApplicationName("openMSA");
+	app.setApplicationName("openMSAGui");
 	app.setApplicationVersion("1.0.0");
 
 	QIcon::setThemeName("automotive");

@@ -1,8 +1,7 @@
 QT += charts quick quickcontrols2
-
+OPENMSA_DIR = $$(OPENMSA_DIR)
 HEADERS += \
     datasource.h \
-    ../openMSA/shared/comprotocol.h \
     markerx.h \
     markerfactory.h \
     settings.h
@@ -10,10 +9,20 @@ HEADERS += \
 SOURCES += \
     main.cpp \
     datasource.cpp \
-    ../openMSA/shared/comprotocol.cpp \
     markerx.cpp \
     markerfactory.cpp \
     settings.cpp
+isEmpty(OPENMSA_DIR) {
+SOURCES += ../openMSA/shared/comprotocol.cpp
+HEADERS += ../openMSA/shared/comprotocol.h
+INCLUDEPATH += ../openMSA/shared
+}
+else {
+message("Using openMSA directory from environment variable")
+SOURCES += $$(OPENMSA_DIR)/shared/comprotocol.cpp
+HEADERS += $$(OPENMSA_DIR)/shared/comprotocol.h
+INCLUDEPATH += $$(OPENMSA_DIR)/shared
+}
 
 RESOURCES += \
     icons/icons.qrc \
