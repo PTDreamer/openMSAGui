@@ -1,4 +1,7 @@
 QT += charts quick quickcontrols2
+
+TARGET = openMSAGui
+
 OPENMSA_DIR = $$(OPENMSA_DIR)
 HEADERS += \
     datasource.h \
@@ -35,5 +38,12 @@ DISTFILES += \
     qtquickcontrols2.conf \
     uncrustify.cfg
 
-target.path = /home/jose/Desktop/qmloscilloscope
-INSTALLS += target
+linux-g++ {
+message("copying assets to $$OUT_PWD")
+#copydata.commands = $(COPY_DIR) $$PWD/deployment/li $$OUT_PWD
+copydata.commands = $(COPY) $$PWD/deployment/linux/* $$OUT_PWD
+first.depends = $(first) copydata
+export(first.depends)
+export(copydata.commands)
+QMAKE_EXTRA_TARGETS += first copydata
+}

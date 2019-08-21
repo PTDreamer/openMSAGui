@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=openMSA Gui
+Comment=Gui application for controlling Scotty's Spectrum Analyser
+Exec=openMSAGui
+Icon=openMSAGui
+Categories=Office;
+Name[en_US]=openMSAGui.desktop

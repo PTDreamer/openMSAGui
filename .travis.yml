@@ -23,7 +23,8 @@ script:
 - /opt/Qt/5.12.2/gcc_64/bin/qmake --version
 - /opt/Qt/5.12.2/gcc_64/bin/qmake
 - make -j$(nproc)
-- "${TRAVIS_BUILD_DIR}/linuxdeployqt-continuous-x86_64.AppImage ${TRAVIS_BUILD_DIR}/openMSA.desktop -verbose=1 -appimage -qmake=/opt/Qt/5.12.2/gcc_64/bin/qmake"
+- ls -all
+- "${TRAVIS_BUILD_DIR}/linuxdeployqt-continuous-x86_64.AppImage ${TRAVIS_BUILD_DIR}/openMSAGui.desktop -verbose=1 -appimage -qmake=/opt/Qt/5.12.2/gcc_64/bin/qmake"
 - mv openMSA*.AppImage openMSAGui.AppImage
 
 deploy:
