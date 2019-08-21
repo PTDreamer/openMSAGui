@@ -40,7 +40,6 @@ DISTFILES += \
 
 linux-g++ {
 message("copying assets to $$OUT_PWD")
-#copydata.commands = $(COPY_DIR) $$PWD/deployment/li $$OUT_PWD
 copydata.commands = $(COPY) $$PWD/deployment/linux/* $$OUT_PWD
 first.depends = $(first) copydata
 export(first.depends)

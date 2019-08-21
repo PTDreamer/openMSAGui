@@ -4,10 +4,14 @@ addons:
   apt:
     packages: xvfb libusb-1.0-0-dev mesa-common-dev libgl1-mesa-dev libxkbcommon-x11-0
 env:
-  global: RUNNER="non-interactive-qt-installer/qt_installer.sh"
+  global: 
+    - RUNNER="non-interactive-qt-installer/qt_installer.sh"
+    - OPENMSA_DIR="${TRAVIS_BUILD_DIR}/openMSA
 
 before_install: 
 install:
+- git clone https://github.com/PTDreamer/openMSA.git ${TRAVIS_BUILD_DIR}/openMSA
+- export OPENMSA_DIR="${TRAVIS_BUILD_DIR}/openMSA"
 - if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
     sudo apt-get -y install xvfb libusb-1.0-0-dev mesa-common-dev libgl1-mesa-dev libxkbcommon-x11-0
     && qmake --version
@@ -18,18 +22,28 @@ install:
     && sudo xvfb-run -e /dev/stdout -s "-screen 0 1024x768x24" --auto-servernum --server-num=1 --error-file=/dev/stderr ./qt_installer.sh
     && cd ${TRAVIS_BUILD_DIR}
     && sudo ln -s /usr/lib/x86_64-linux-gnu/libGL.so.1 /usr/lib/libGL.so
-    && git clone https://github.com/PTDreamer/openMSA.git ${TRAVIS_BUILD_DIR}/openMSA
-    && export OPENMSA_DIR="${TRAVIS_BUILD_DIR}/openMSA"
+  ;
+  fi
+- if [ "${TRAVIS_OS_NAME}" = "windows" ]; then
+    git clone https://github.com/skalee/non-interactive-qt-installer.git ${TRAVIS_BUILD_DIR}/non-interactive-qt-installer
+    && ${RUNNER}
   ;
   fi
 script:
-- /opt/Qt/5.12.2/gcc_64/bin/qmake --version
-- /opt/Qt/5.12.2/gcc_64/bin/qmake
-- make -j$(nproc)
-- ls -all
-- "${TRAVIS_BUILD_DIR}/linuxdeployqt-continuous-x86_64.AppImage ${TRAVIS_BUILD_DIR}/openMSAGui.desktop -verbose=1 -appimage -qmake=/opt/Qt/5.12.2/gcc_64/bin/qmake"
-- mv openMSA*.AppImage openMSAGui.AppImage
-
+- if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
+  /opt/Qt/5.12.2/gcc_64/bin/qmake --version
+  && /opt/Qt/5.12.2/gcc_64/bin/qmake
+  && make -j$(nproc)
+  && ls -all
+  && ${TRAVIS_BUILD_DIR}/linuxdeployqt-continuous-x86_64.AppImage ${TRAVIS_BUILD_DIR}/openMSAGui.desktop -verbose=1 -appimage -qmake=/opt/Qt/5.12.2/gcc_64/bin/qmake
+  && mv openMSA*.AppImage openMSAGui.AppImage
+  ;
+  fi
+- if [ "${TRAVIS_OS_NAME}" = "windows" ]; then
+    cmd.exe /C '"C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" amd64 && qmake'
+    && cmd.exe /C '"C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" amd64 && nmake'
+  ;
+  fi
 deploy:
   skip_cleanup: true
   provider: releases
@@ -45,5 +59,10 @@ matrix:
     dist: Xenial
     env:
     - QT_INSTALLER_DOWNLOAD_NAME="qt-unified-linux-x64-online.run"
-    - QT_INSTALLER_VARS="${TRAVIS_BUILD_DIR}/vars_linux.js"
+    - QT_INSTALLER_VARS="${TRAVIS_BUILD_DIR}/deployment/linux/vars_linux.js"
     - PATH="/opt/Qt/5.12.2/gcc_64/bin:${PATH}"
+  - os: windows
+    env:
+    - QT_INSTALLER_DOWNLOAD_NAME="qt-unified-windows-x86-online.exe"
+    - QT_INSTALLER_VARS="${TRAVIS_BUILD_DIR}/deployment/windows/vars_windows.js"
+    - PATH="/c/Qt/5.12.2/msvc2017_64/bin:${PATH}"
