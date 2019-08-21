@@ -8,17 +8,20 @@ env:
 
 before_install: 
 install:
-- sudo apt-get -y install xvfb libusb-1.0-0-dev mesa-common-dev libgl1-mesa-dev libxkbcommon-x11-0
-- qmake --version
-- wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
-- chmod a+x linuxdeployqt-continuous-x86_64.AppImage
-- git clone https://github.com/skalee/non-interactive-qt-installer.git ${TRAVIS_BUILD_DIR}/non-interactive-qt-installer
-- cd ${TRAVIS_BUILD_DIR}/non-interactive-qt-installer
-- sudo xvfb-run -e /dev/stdout -s "-screen 0 1024x768x24" --auto-servernum --server-num=1 --error-file=/dev/stderr ./qt_installer.sh
-- cd ${TRAVIS_BUILD_DIR}
-- sudo ln -s /usr/lib/x86_64-linux-gnu/libGL.so.1 /usr/lib/libGL.so
-- git clone https://github.com/PTDreamer/openMSA.git ${TRAVIS_BUILD_DIR}/openMSA
-- export OPENMSA_DIR="${TRAVIS_BUILD_DIR}/openMSA"
+- if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
+    sudo apt-get -y install xvfb libusb-1.0-0-dev mesa-common-dev libgl1-mesa-dev libxkbcommon-x11-0
+    && qmake --version
+    && wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
+    && chmod a+x linuxdeployqt-continuous-x86_64.AppImage
+    && git clone https://github.com/skalee/non-interactive-qt-installer.git ${TRAVIS_BUILD_DIR}/non-interactive-qt-installer
+    && cd ${TRAVIS_BUILD_DIR}/non-interactive-qt-installer
+    && sudo xvfb-run -e /dev/stdout -s "-screen 0 1024x768x24" --auto-servernum --server-num=1 --error-file=/dev/stderr ./qt_installer.sh
+    && cd ${TRAVIS_BUILD_DIR}
+    && sudo ln -s /usr/lib/x86_64-linux-gnu/libGL.so.1 /usr/lib/libGL.so
+    && git clone https://github.com/PTDreamer/openMSA.git ${TRAVIS_BUILD_DIR}/openMSA
+    && export OPENMSA_DIR="${TRAVIS_BUILD_DIR}/openMSA"
+  ;
+  fi
 script:
 - /opt/Qt/5.12.2/gcc_64/bin/qmake --version
 - /opt/Qt/5.12.2/gcc_64/bin/qmake
