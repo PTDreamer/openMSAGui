@@ -44,6 +44,12 @@ script:
     && cmd.exe /C '"C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" amd64 && nmake'
     && dir
     && cmd.exe /C '"C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" amd64 && windeployqt --qmldir qml release\openMSAGui.exe'
+  ; 
+  fi
+- if [ "$TRAVIS_OS_NAME" = "windows" ]; then 
+    choco install zip
+    && cd release
+    && zip openMSAGui.zip -r *
   ;
   fi
 deploy:
